@@ -3,7 +3,7 @@
   "name": "io.github.lairey-ai/ai-growth",
   "title": "AI Growth",
   "description": "Agent-native 的个人成长执行系统：访谈定目标、动态生成每日少量任务、跨天自动作废旧任务、用真实证据积累成长记录，并同步为可迁移的 AI Passport。",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "websiteUrl": "https://github.com/lairey-ai/ai-growth",
   "repository": {
     "url": "https://github.com/lairey-ai/ai-growth",
@@ -14,7 +14,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "ai-growth",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "transport": {
         "type": "stdio"
       },

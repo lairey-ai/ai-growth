@@ -1,6 +1,6 @@
 import type { CoreContext } from './context.js';
 import { getProfile, ensureProfile, getSetting } from './profile.js';
-import { getActiveGoals, getCurrentStage } from './goals.js';
+import { getActiveGoals, getCurrentStage, listGoals, listStages } from './goals.js';
 import { getTodayPlan } from './actions.js';
 import { hasPendingReplan } from './rollover.js';
 import { getActiveLifeContext } from './lifeContext.js';
@@ -18,9 +18,15 @@ export function growthStatus(ctx: CoreContext): GrowthStatus {
       : profile.onboardingStatus === 'IN_PROGRESS'
         ? 'IN_PROGRESS'
         : 'COMPLETED';
-  const goals = getActiveGoals(ctx);
-  const primaryGoal = goals[0];
+  // ⚠️ 不能只看 ACTIVE 目标。目标处于 DRAFT（草稿待确认）或 CONFIRMED（已确认、尚未激活）时，
+  //   getActiveGoals() 也是空的 —— 于是这里会走到"没有目标 → 去聊目标"，
+  //   而用户明明已经访谈完、目标也确认过了。真机上就是这么把人卡住的：
+  //   status 说 DISCUSS_GOAL，但该做的是"排阶段计划"。
+  const openGoals = listGoals(ctx, ['DRAFT', 'CONFIRMED', 'ACTIVE']);
+  const goals = openGoals.filter((g) => g.status === 'ACTIVE');
+  const primaryGoal = goals[0] ?? openGoals.find((g) => g.status === 'CONFIRMED') ?? openGoals[0];
   const stage = primaryGoal ? getCurrentStage(ctx, primaryGoal.id) : null;
+  const hasStage = primaryGoal ? listStages(ctx, primaryGoal.id).length > 0 : false;
   const { plan, actions: todayActionsAll } = getTodayPlan(ctx);
   const life = getActiveLifeContext(ctx);
   const passportUpdated = getSetting(ctx, 'passport_last_generated_at') ?? undefined;
@@ -30,8 +36,17 @@ export function growthStatus(ctx: CoreContext): GrowthStatus {
     suggested = onboarding === 'NOT_STARTED' ? 'START_ONBOARDING' : 'CONTINUE_ONBOARDING';
   } else if (hasPendingReplan(ctx)) {
     suggested = 'RESOLVE_REPLAN';
-  } else if (goals.length === 0) {
+  } else if (openGoals.length === 0) {
     suggested = 'DISCUSS_GOAL';
+  } else if (openGoals.some((g) => g.status === 'DRAFT')) {
+    // 草稿还在等用户确认 —— 这一步必须先做，否则后面做什么都不作数
+    suggested = 'CONFIRM_GOAL';
+  } else if (!hasStage) {
+    // 有目标但没阶段计划：每日任务是**从当前阶段生成的**，没有阶段就排不出今天
+    suggested = 'CREATE_STAGE_PLAN';
+  } else if (goals.length === 0) {
+    // 阶段排好了但目标还没激活（PAUSED 也落这里）
+    suggested = 'ACTIVATE_GOAL';
   } else if (!plan) {
     suggested = 'RUN_DAILY_PLANNING';
   } else if (plan.status === 'DRAFT') {

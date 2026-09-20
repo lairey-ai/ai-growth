@@ -1,6 +1,6 @@
 {
   "name": "ai-growth",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Agent-native、Local-first 的个人成长执行系统：AI 维护计划，人保留目标与最终确认权。",
   "mcpName": "io.github.lairey-ai/ai-growth",
   "type": "module",
