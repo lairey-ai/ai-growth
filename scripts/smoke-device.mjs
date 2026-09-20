@@ -255,7 +255,7 @@ check('正确令牌（header）→ 200', (await q2('GET', '/api/device/ping', { 
 check('正确令牌（query，固件走这条）→ 200', (await q2('GET', '/api/device/ping?token=smoke-token-1234')).status === 200);
 check('伪造 Host: 127.0.0.1 不能绕过 → 401', (await q2('GET', '/api/device/ping', { Host: '127.0.0.1' })).status === 401);
 check('面板接口仍锁回环（Host 127.0.0.1 → 200）', (await q2('GET', '/api/today', { Host: '127.0.0.1' })).status === 200);
-check('面板接口拒绝局域网 Host → 403', (await q2('GET', '/api/today', { Host: '192.168.3.46' })).status === 403);
+check('面板接口拒绝局域网 Host → 403', (await q2('GET', '/api/today', { Host: '192.168.1.10' })).status === 403);
 note(`当前令牌 = ${deviceToken(ctx)}`);
 
 // ═════════════════════ E) 跨天降级为迟记 ═════════════════════

@@ -12,17 +12,17 @@ import { commandFits, MAX_DEVICE_CMDLINE } from '../../src/device/provision.js';
  */
 describe('设备串口命令行长度闸门', () => {
   it('中文 SSID 走 hex 的真实长度必须在闸门内（回归守卫）', () => {
-    // 复现真机那条命令：growth_set_hex <ssid_hex> <pass_hex> <host> <port> <token>
-    const ssidHex = Buffer.from('傅渣渣的家_Wi-Fi5', 'utf8').toString('hex');   // 22 字节 → 44 字符
-    const passHex = Buffer.from('fhj123456', 'utf8').toString('hex');            // 9 字节 → 18 字符
+    // 复现真机那条命令的形状（用等长的占位数据，避免把个人 Wi-Fi 信息写进仓库）：growth_set_hex <ssid_hex> <pass_hex> <host> <port> <token>
+    const ssidHex = Buffer.from('示例无线网_Wi-Fi5', 'utf8').toString('hex');   // 22 字节 → 44 字符
+    const passHex = Buffer.from('example12', 'utf8').toString('hex');            // 9 字节 → 18 字符
     const token = 'a'.repeat(32);
-    const line = ['growth_set_hex', ssidHex, passHex, '192.168.3.46', '4580', token].join(' ');
+    const line = ['growth_set_hex', ssidHex, passHex, '192.168.1.10', '4580', token].join(' ');
     expect(line.length).toBe(129);            // 这条当年就是被 128 的上限截掉的
     expect(commandFits(line)).toBe(true);     // 上限提到 512 后必须放得下
   });
 
   it('ASCII 凭据走 growth_set 时更短，当然也放得下', () => {
-    const line = ['growth_set', 'mywifi', 'pass1234', '192.168.3.46', '4580', 'a'.repeat(32)].join(' ');
+    const line = ['growth_set', 'mywifi', 'pass1234', '192.168.1.10', '4580', 'a'.repeat(32)].join(' ');
     expect(commandFits(line)).toBe(true);
   });
 
