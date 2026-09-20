@@ -186,3 +186,32 @@ ai-growth device setup --ssid "你的Wi-Fi名" --pass "Wi-Fi密码"
 | 想确认状态机没被绕过 | `audit_log` 表记录了关键变动（含 Replan 决策）的 before/after 与原因 |
 | 面板打不开 / 白屏 | 面板由 daemon 提供：`bash scripts/doctor.sh` 看「面板 API」；单跑用 `npm run api`。白屏多半是 MIME 不对，重启进程即可 |
 | 打包后 API 调用失败 | WebView 必须加载 `http://localhost:4580`，不能用 `file://`（origin 为 null 会被 CORS 拦） |
+
+## 常驻服务（daemon）没在跑怎么办
+
+**症状**：面板打不开、设备显示"连不上电脑"的兜底卡，但你以为它一直在跑。
+
+先确认状态（三条命令逐级确认，别只看一条）：
+
+```bash
+launchctl print "gui/$(id -u)/com.lairey.ai-growth.daemon" | head    # 服务是否被 launchd 托管
+ls -l ~/Library/LaunchAgents/com.lairey.ai-growth.daemon.plist       # 服务定义是否还在
+# 最可靠的一条：直接看端口有没有人在听（不要用 curl，本机可能有代理会给出假的 502）
+node -e "const s=require('net').connect(4580,'127.0.0.1',()=>{console.log('在跑 ✓');s.end()}).on('error',()=>console.log('没在跑 ✗'))"
+```
+
+**最常见的原因**：你曾用 `ai-growth serve` 在前台跑过 —— 它把 daemon 当**子进程**拉起，
+**终端一关就把它带走了**（daemon 日志里会看到"启动了、但没有 SIGTERM 退出记录"）。
+
+**修复**（服务定义还在的话，一条命令即可）：
+
+```bash
+launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.lairey.ai-growth.daemon.plist
+```
+
+服务定义丢了就重跑安装脚本，它会重建 plist、`bootout` → `bootstrap`，并且**验证进程真的活着**
+（`bootstrap` 返回成功不等于跑起来了 —— 这一点脚本里专门处理过）。
+
+> 常驻服务带 `KeepAlive` + `RunAtLoad`：登录自动启动，进程意外退出会自动拉起。
+> 它跑的是**全局安装的那一份**，所以更新代码后要用
+> `launchctl kickstart -k "gui/$(id -u)/com.lairey.ai-growth.daemon"` 让它换上新代码。

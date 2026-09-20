@@ -34,6 +34,13 @@
   `npm rebuild better-sqlite3`。**发布时必须 `npm publish --ignore-scripts`**（跳过 prepublishOnly）。
 - 🔴 **升版本要改两处**：`package.json` **和** `server.json`（后者版本必须与前者一致，有测试锁定）。
 - 🔴 **npm 令牌权限**：必须选 **All packages**；选 "Only select packages" 时**发不了一个还不存在的包**。
+- 🔴 **`ai-growth` 不在默认 PATH 上**：全局 bin 在 `~/.npm-global/bin`，只在用户的 zshrc 里加了 PATH。
+  非交互 shell（脚本、定时任务、Agent 会话）里必须显式用
+  `PATH="$HOME/.npm-global/bin:/Users/fuhaojie/.workbuddy/binaries/node/versions/22.22.2-3/bin:$PATH"`，
+  或直接调绝对路径 `"$HOME/.npm-global/bin/ai-growth"` —— 否则 `command not found`。
+- 🔴 **常驻服务不随代码更新自动重启**：更新后用
+  `launchctl kickstart -k "gui/$(id -u)/com.lairey.ai-growth.daemon"`。
+  排查"服务没在跑"的完整步骤见 `docs/usage.md`。
 - 🔴 **本机构建**：`npm run build` 里的 `rm -rf dist` 会被批量删除保护拦下 →
   改用 `npx tsc -p tsconfig.json` + 手动 `cp` 资源（等价；`dist` 有逐字节一致性测试兜底）。
 - ⚠️ **时间处理**：`dateKey` 一律由服务端按配置时区算；客户端**不要**对 ISO 串 `slice(0,10)`（会差一天）。
