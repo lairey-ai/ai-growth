@@ -1,0 +1,38 @@
+# 依赖与构建产物
+node_modules/
+dist/
+
+# 打包产物（npm pack）
+*.tgz
+
+# 本地环境与配置
+.env
+.env.local
+
+# 安装脚本生成的片段
+mcp-config.snippet.json
+
+# 本地数据（默认在 ~/.ai-growth，若改为项目内需忽略）
+.ai-growth/
+*.db
+*.db-wal
+*.db-shm
+
+# 日志
+*.log
+daemon-stderr.log
+
+# 编辑器 / 系统
+.DS_Store
+.idea/
+.vscode/
+*.tsbuildinfo
+
+# 测试与覆盖率
+coverage/
+.vitest/
+
+# 协作与内部资料（本地保留，不进公开仓库）
+.workbuddy/
+DELIVERY_REPORT.md
+release/

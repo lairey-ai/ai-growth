@@ -1,0 +1,79 @@
+{
+  "name": "ai-growth",
+  "version": "1.1.1",
+  "description": "Agent-native、Local-first 的个人成长执行系统：AI 维护计划，人保留目标与最终确认权。",
+  "mcpName": "io.github.lairey-ai/ai-growth",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lairey-ai/ai-growth.git"
+  },
+  "homepage": "https://github.com/lairey-ai/ai-growth#readme",
+  "bugs": {
+    "url": "https://github.com/lairey-ai/ai-growth/issues"
+  },
+  "keywords": [
+    "ai-agent",
+    "mcp",
+    "mcp-server",
+    "agent-native",
+    "local-first",
+    "personal-growth",
+    "habit",
+    "planning",
+    "sqlite",
+    "claude",
+    "skill"
+  ],
+  "bin": {
+    "ai-growth": "dist/cli/main.js"
+  },
+  "files": [
+    "dist/",
+    "scripts/",
+    "launchd/",
+    "docs/",
+    "SKILL.md",
+    "AGENTS.md",
+    "START-HERE.md",
+    "README.md",
+    "LICENSE",
+    "PRODUCT_SPEC.md",
+    "IMPLEMENTATION_PLAN.md",
+    "server.json",
+    "llms.txt",
+    ".env.example"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "rm -rf dist && tsc -p tsconfig.json && mkdir -p dist/db/migrations dist/ui && cp -R src/db/migrations/. dist/db/migrations/ && cp -R src/ui/. dist/ui/ && chmod +x dist/cli/main.js dist/mcp/server.js dist/daemon/main.js dist/api/server.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "cli": "node dist/cli/main.js",
+    "mcp": "node dist/mcp/server.js",
+    "daemon": "node dist/daemon/main.js",
+    "api": "node dist/api/server.js",
+    "migrate": "node dist/db/cli.js migrate",
+    "doctor": "bash scripts/doctor.sh",
+    "reset-dev-data": "bash scripts/reset-dev-data.sh",
+    "prepublishOnly": "npm run build && npm test",
+    "gen:device-assets": "node scripts/gen-device-assets.mjs",
+    "smoke:device": "node scripts/smoke-device.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "better-sqlite3": "^11.10.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  }
+}

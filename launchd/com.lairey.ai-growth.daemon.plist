@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  AI Growth 常驻服务（调度 + 面板 API）
+
+  关键设计：指向**全局安装的 CLI**，而不是某个开发目录。
+  这样「更新」就只剩一件事：替换全局包（npm i -g ai-growth@latest，或开发态 git pull + build），
+  重启服务即加载新代码；数据始终在 __DATA_DIR__，与代码解耦。
+
+  注意：launchd 不加载 shell 配置，其 PATH 中没有 node，
+  因此必须用绝对 node 路径调用（不能依赖 `#!/usr/bin/env node` 的 shebang）。
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.lairey.ai-growth.daemon</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>__NODE_BIN__</string>
+        <string>__AI_GROWTH_CLI__</string>
+        <string>serve</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>ProcessType</key>
+    <string>Background</string>
+    <key>StandardErrorPath</key>
+    <string>__DATA_DIR__/daemon-stderr.log</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>AI_GROWTH_DATA_DIR</key>
+        <string>__DATA_DIR__</string>
+        <!--
+          AI Passport 设备需要在局域网里访问本服务。设为 1 时 API 绑 0.0.0.0，
+          且 /api/device/* 对【所有】来源（含本机）强制校验令牌。
+          保持 0 则只绑 127.0.0.1，设备在 Wi-Fi 上永远连不上。
+          由 install.sh --device-lan 写入；用 ai-growth device 查看当前状态与令牌。
+        -->
+        <key>AI_GROWTH_DEVICE_LAN</key>
+        <string>__AI_GROWTH_DEVICE_LAN__</string>
+    </dict>
+</dict>
+</plist>

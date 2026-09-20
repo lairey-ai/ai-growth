@@ -1,0 +1,52 @@
+# llms.txt — ai-growth
+
+> Agent 友好的精简索引。完整信息见 AGENTS.md（面向 Agent）与 README.md（面向人类）。
+
+## What
+ai-growth：Agent-native、Local-first 的个人成长执行系统。AI 维护计划，人保留目标与最终确认权。
+不是 Todo List，不是虚构属性值的 RPG。
+
+## Install
+- npm：`npm install -g ai-growth && ai-growth init`
+- 源码：`git clone <repo> && npm install && npm run build && ./scripts/install.sh`
+- 要求：Node.js >= 20
+
+## Self-describe（Agent 第一步）
+- `ai-growth help --json` — 全部命令 + 产品规则
+- `ai-growth agent-info --json` — 安装路径、数据目录、MCP 配置、Skill 位置、下一步
+- `ai-growth status --json` — 当前状态与 `suggestedNextOperation`
+
+## Connect
+- MCP：`ai-growth mcp-config --json`（stdio，63 个工具）
+- Skill：`ai-growth skill`（打印 SKILL.md 全文，作为 Agent 行为准则）
+- CLI 降级：`status` / `today` / `goals` / `timeline` / `passport` / `metrics` / `rollover` / `complete` / `skip` / `delay`
+
+## Output contract
+所有命令支持 `--json`，返回 `{ ok, data, error? }`。非 TTY 调用时默认 JSON；
+人类可读输出加 `--no-json`。
+
+## Rules（不可违反）
+1. AI 管路线，人决定目的地。
+2. 首次使用必须先访谈，不允许直接生成任务。
+3. Daily Action 只当天有效，次日过期，绝不 clone 到第二天。
+4. Main Quest 未完成不作废，进 PENDING_REPLAN 由 Replan 解决。
+5. 默认 1 Main Quest + 0~2 Daily Actions；长期加负荷需用户确认。
+6. 不产生虚构数值（六维属性 / EXP / 等级 / 掌握度百分比 / 自律分）。
+7. 所有状态变更经 Core Service，不直接写数据库。
+8. 「哪一天」按配置时区算，不按 UTC 截断。
+9. 不要为展示功能而生成大量任务。
+
+## Files
+- AGENTS.md — Agent 入口（含访谈清单、错误码表、架构）
+- SKILL.md — Agent 运行时行为准则
+- README.md — 人类文档（安装/启动/面板/排障）
+- PRODUCT_SPEC.md — 冻结产品规范
+- server.json — MCP Registry 清单
+- src/ — 源码（core / mcp / cli / daemon / ui）
+
+## Data
+全部本地：`~/.ai-growth/`（SQLite + Passport JSON + 日志）。无云端账号，不外传。
+面板仅监听 `127.0.0.1:4580`，无鉴权但有 Host 白名单（防 DNS rebinding）。
+
+## Entry point
+https://github.com/lairey-ai/ai-growth
