@@ -49,7 +49,15 @@ export function buildCardState(ctx: CoreContext, opts: BuildStateOptions = {}): 
   const stages = primary ? listStages(ctx, primary.id) : [];
   const current = primary ? getCurrentStage(ctx, primary.id) : null;
 
-  const items: CardItem[] = actions.map((a) => ({
+  // 🔴 只有"用户今天还能动手做"的条目才进牌组。已终态、已取消、已跳过的都必须挡在外面：
+  //   ① 它们不是今天要做的事，摆在屏幕上会让"今天几件事"看起来比实际多
+  //      （真机上踩过：反复调整当天计划会留下 CANCELLED 的旧行，于是"应该有 2 件"变成"设备上 5 条"）；
+  //   ② 卡片每个条目的提示都是「确定 = 完成」，而 CANCELLED/SKIPPED/EXPIRED 都**不能**转 COMPLETED，
+  //      状态机会拒绝 → 用户按下去只会拿到一个"操作失败"。宁可它压根不出现。
+  const HIDDEN_STATUSES = new Set(['CANCELLED', 'SKIPPED', 'EXPIRED']);
+  const visibleActions = actions.filter((a) => !HIDDEN_STATUSES.has(a.status));
+
+  const items: CardItem[] = visibleActions.map((a) => ({
     id: a.id,
     kind: a.kind,
     title: a.title,
